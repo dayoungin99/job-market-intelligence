@@ -41,6 +41,7 @@ def fetch_jobs(keyword):
         logging.error(f"Request failed: {e}")
         return None
 
+jobs_collected = 0
 file_path = "Not Saved"
 
 keyword = "data scientist"
@@ -59,6 +60,14 @@ def validate_response(data):
         logging.warning("No job found.")
         return False
     
+    required_fields = ["id", "title", "company", "location"]
+
+    for job in data["results"]:
+        for field in required_fields:
+            if field not in job:
+                logging.warning(f"Missing required field: {field}")
+                return False
+    
     return True
         
 def save_raw_json(data):
@@ -71,7 +80,9 @@ def save_raw_json(data):
     return file_path
         
 if data is not None:
+    jobs_collected = len(data["results"])
     file_path = save_raw_json(data)
+    logging.info(f"Raw JSON saved to {file_path}")
     
 if validate_response(data):
     for job in data["results"]:
@@ -82,6 +93,6 @@ print(f"""
       Job Collection Summary
       ========================
       Keyword: {keyword}
-      Jobs Collected: {len(data["results"])}
+      Jobs Collected: {jobs_collected}
       Raw JSON Saved: {file_path}
       """)
